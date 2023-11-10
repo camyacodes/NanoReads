@@ -1,26 +1,45 @@
 "use client";
 import Link from "next/link";
-import React from "react"
+import React, {useEffect} from "react"
 import { useRouter } from "next/navigation";
-// import {axios} from "axios";
+import axios from "axios";
 
 
 
 export default function LoginPage() {
+    const router = useRouter()
+    const [loading, setLoading] = React.useState(false)
     const [user, setUser] = React.useState({
         email: "",
         password: "",
     })
+    const [buttonDisabled, setButtonDisabled] = React.useState(false);
 
     const onLogin = async () => {
-
+        try {
+            setLoading(true);
+            const response = await axios.post("/api/users/login", user)
+            console.log("Login success", response.data)
+            router.push("/profile")
+        } catch (error:any) {
+            console.log("Login failed", error.message);
+        } finally {
+            setLoading(false);
+        }
     }
+
+    useEffect(() => {
+        if(user.email.length > 0 && user.password.length > 0)
+        {setButtonDisabled(false) } else {
+            setButtonDisabled(true)
+        }
+    }, [user]);
 
     return (
         <div className="bg-grey-lighter min-h-screen flex flex-col">
             <div className="container max-w-sm mx-auto flex-1 flex flex-col items-center justify-center px-2">
                 <div className="bg-white px-6 py-8 rounded shadow-md text-black w-full">
-                    <h1 className="mb-8 text-3xl text-center">Login</h1>
+                    <h1 className="mb-8 text-3xl text-center">{loading ? "Logging in" : "Login"}</h1>
                     <input 
                         id="email"
                         className="block border border-grey-light w-full p-3 rounded mb-4"
@@ -43,7 +62,7 @@ export default function LoginPage() {
                         onClick={onLogin}
                         type="submit"
                         className="w-full text-center py-3 rounded bg-green-500 text-black hover:bg-green-600 focus:outline-none my-1"
-                    >Login</button>
+                    >{buttonDisabled ? "Cannot Login" : "Login"}</button>
 
                 </div>
 
